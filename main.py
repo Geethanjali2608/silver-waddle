@@ -1,13 +1,24 @@
 import json
+import os
 
 import openai
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-# Set your OpenAI API key
-openai.api_key = ""
+# Load environment variables from .env file (optional)
+load_dotenv()
+
+# Set Azure OpenAI API configuration
+openai.api_type = "azure"
+openai.api_base = os.getenv("AZURE_OPENAI_ENDPOINT")  # e.g., https://your-resource-name.openai.azure.com/
+openai.api_version = "2023-12-01-preview"
+openai.api_key = os.getenv("AZURE_OPENAI_KEY")        # your Azure key
+
+# Replace with your actual Azure deployment name
+AZURE_DEPLOYMENT_NAME = "SecureLogAI"  # ← change to match your Azure deployment
 
 app = FastAPI()
 
@@ -68,7 +79,7 @@ async def upload_log(file: UploadFile = File(...), flags: str = Form(None)):
 
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            engine=AZURE_DEPLOYMENT_NAME,  # Azure deployment name
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2
         )
@@ -95,7 +106,7 @@ Question: {question}
 
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            engine=AZURE_DEPLOYMENT_NAME,  # Azure deployment name
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3
         )
